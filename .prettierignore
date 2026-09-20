@@ -1,0 +1,8 @@
+# Source-of-truth specifications. Keep byte-stable so diffs show intent, not reflow.
+prd.md
+architecture.md
+
+pnpm-lock.yaml
+dist/
+coverage/
+**/generated/

@@ -1,0 +1,27 @@
+{
+  "name": "@trustos/decision-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "authorize, decision read, grant consume, outcome APIs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@trustos/contracts": "workspace:*",
+    "@trustos/domain": "workspace:*",
+    "@trustos/database": "workspace:*",
+    "@trustos/auth": "workspace:*",
+    "@trustos/observability": "workspace:*",
+    "@trustos/policy-engine": "workspace:*"
+  }
+}

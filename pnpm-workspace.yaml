@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'integrations/*'
+  - 'tests/*'
+
+# Fail loudly on phantom dependencies rather than at runtime.
+autoInstallPeers: true
+strictPeerDependencies: false

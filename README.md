@@ -1,0 +1,48 @@
+# TrustOS
+
+An enterprise control layer for AI agents. TrustOS identifies an agent, binds it to an
+accountable human owner, bounds its capabilities, evaluates every action request against
+deterministic policy, routes sensitive actions to a human approver, and issues a
+short-lived single-use execution grant that a customer-controlled gateway consumes before
+touching the destination system.
+
+TrustOS never executes the business action. It decides and records authority; the gateway
+executes using its own destination credentials.
+
+## Documents
+
+| File                                         | Purpose                                                         |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| [CLAUDE.md](CLAUDE.md)                       | **Read first.** Invariants, build order, conventions, decisions |
+| [prd.md](prd.md)                             | Product requirements v1.1 — requirement IDs, acceptance suite   |
+| [architecture.md](architecture.md)           | Implementation design v1.0 — schema, flows, API contract        |
+| [docs/threat-model.md](docs/threat-model.md) | Trust boundaries and the attacks each control addresses         |
+
+## Status
+
+Wave 0 of 5. Toolchain, workspace and contracts. No running system yet.
+
+## Getting started
+
+```sh
+pnpm install
+pnpm verify     # format, lint, typecheck, boundaries, test
+```
+
+Requires Node 26 and pnpm 11. TypeScript is pinned to the 6.x line: TypeScript 7 is not
+yet supported by typescript-eslint or dependency-cruiser, and losing boundary enforcement
+costs more than the compiler speed gains.
+
+## Layout
+
+```
+apps/console          React UI
+apps/control-api      org, identity, policy, approval, audit routes
+apps/decision-api     authorize, decision read, grant consume, outcome
+apps/worker           outbox, webhook, expiry, export, integrity, reconciliation
+packages/*            contracts, domain, policy-engine, database, auth, observability, sdk
+integrations/         reference CRM gateway and fake destination
+tests/                security, load, e2e
+```
+
+Module boundaries are machine-enforced by `pnpm boundaries`, not by convention.

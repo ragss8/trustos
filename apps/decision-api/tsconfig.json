@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/domain"
+    },
+    {
+      "path": "../../packages/database"
+    },
+    {
+      "path": "../../packages/auth"
+    },
+    {
+      "path": "../../packages/observability"
+    },
+    {
+      "path": "../../packages/policy-engine"
+    }
+  ]
+}

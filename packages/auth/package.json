@@ -1,0 +1,23 @@
+{
+  "name": "@trustos/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Token validation and authorization guards",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@trustos/contracts": "workspace:*",
+    "@trustos/observability": "workspace:*"
+  }
+}

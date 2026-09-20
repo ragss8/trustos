@@ -175,13 +175,14 @@ prd.md §3.4 and §19 as later or never. If a task appears to need one, flag it.
 
 ### Settled
 
-| Decision | Choice | Consequence |
-| --- | --- | --- |
-| Build model | Built entirely by Claude Code across 5 parallel agent tracks, split by write-ownership boundary | No two tracks write the same tables. See "Agent tracks" below. |
-| Local scope | Full system: backend, console, SDK, gateway and fake CRM all working locally before UAT | Console track runs beside the backend rather than queued after it |
-| Local identity | Keycloak in Docker | Real OIDC: auth-code + PKCE, client-credentials, MFA claims, JWKS rotation. Do not stub token validation. |
-| UAT target | Docker Compose on a provided VM | Accepted limit: no synchronous multi-zone failover, so NFR-06 durability and NFR-07 RPO/RTO **cannot** be demonstrated at UAT. Do not report them as met. |
-| Review cadence | Sign-off at each wave boundary | Stop and report at the end of each wave; do not roll into the next one unprompted. |
+| Decision       | Choice                                                                                          | Consequence                                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build model    | Built entirely by Claude Code across 5 parallel agent tracks, split by write-ownership boundary | No two tracks write the same tables. See "Agent tracks" below.                                                                                          |
+| Local scope    | Full system: backend, console, SDK, gateway and fake CRM all working locally before UAT         | Console track runs beside the backend rather than queued after it                                                                                       |
+| Local identity | Keycloak in Docker                                                                              | Real OIDC: auth-code + PKCE, client-credentials, MFA claims, JWKS rotation. Do not stub token validation.                                               |
+| UAT target     | **Deferred.** Local-only until the VM is sized and costed                                       | Build nothing UAT-specific yet. Keep infrastructure behind interfaces. Wave 5 is out of plan until reopened.                                            |
+| Local host     | macOS arm64, 10 cores / 16 GB, Docker 29, Node 26, pnpm 11                                      | Whole stack must run in this envelope: Postgres, Redis, Keycloak, fake CRM, 3 Node apps, console. Record measured usage — it is the input to VM sizing. |
+| Review cadence | Sign-off at each wave boundary                                                                  | Stop and report at the end of each wave; do not roll into the next one unprompted.                                                                      |
 
 ### Still open
 
@@ -195,24 +196,28 @@ Compose-on-a-VM numbers are not evidence for any NFR.
 
 ## Agent tracks
 
-| Track | Owns | Depends on |
-| --- | --- | --- |
-| A1 Core & Data | `packages/contracts`, `packages/database` (schema, RLS, tenant tx), `packages/domain` | — (blocks all others) |
-| A2 Policy | `packages/policy-engine`, capabilities, policy routes | A1 contracts |
-| A3 Decision & Enforcement | `apps/decision-api`, authorize, grants, consume, outcomes, audit/outbox writes | A1 schema |
-| A4 Platform | `packages/auth`, identity & credentials, `apps/worker`, local Docker env | A1 contracts |
-| A5 Surfaces | `apps/console`, `packages/sdk-typescript`, `integrations/reference-crm` + fake CRM | A1 contracts (stubs first) |
+| Track                     | Owns                                                                                  | Depends on                 |
+| ------------------------- | ------------------------------------------------------------------------------------- | -------------------------- |
+| A1 Core & Data            | `packages/contracts`, `packages/database` (schema, RLS, tenant tx), `packages/domain` | — (blocks all others)      |
+| A2 Policy                 | `packages/policy-engine`, capabilities, policy routes                                 | A1 contracts               |
+| A3 Decision & Enforcement | `apps/decision-api`, authorize, grants, consume, outcomes, audit/outbox writes        | A1 schema                  |
+| A4 Platform               | `packages/auth`, identity & credentials, `apps/worker`, local Docker env              | A1 contracts               |
+| A5 Surfaces               | `apps/console`, `packages/sdk-typescript`, `integrations/reference-crm` + fake CRM    | A1 contracts (stubs first) |
 
 Integration, concurrency, security and e2e suites are **not** delegated to a track. They
 exist to catch mistakes between tracks, so a single track must not author its own.
 
 ## Wave plan
 
-| Wave | Content | Gate |
-| --- | --- | --- |
-| 0 | Repo scaffold, toolchain, CI skeleton, contracts v0, trust-boundary threat model | Contracts reviewed; CI green on an empty build |
-| 1 | DB schema, RLS, tenant transactions, auth, local Docker env | RLS proven under a real non-owner role; isolation tests pass |
-| 2 | Policy engine, decision core + idempotency, identity lifecycle, SDK | Deterministic evaluation; concurrent idempotency holds |
-| 3 | Grants/consume/outcomes, publish + review, console, workers, gateway | Allow and deny paths end to end through the gateway |
-| 4 | Approvals end to end, concurrency/security/e2e suites, hardening | prd.md §18 acceptance suite green |
-| 5 | UAT deploy on the VM, minimal-usage smoke | Smoke pass; NFR limits stated, not claimed |
+| Wave | Content                                                                          | Gate                                                         |
+| ---- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 0    | Repo scaffold, toolchain, CI skeleton, contracts v0, trust-boundary threat model | Contracts reviewed; CI green on an empty build               |
+| 1    | DB schema, RLS, tenant transactions, auth, local Docker env                      | RLS proven under a real non-owner role; isolation tests pass |
+| 2    | Policy engine, decision core + idempotency, identity lifecycle, SDK              | Deterministic evaluation; concurrent idempotency holds       |
+| 3    | Grants/consume/outcomes, publish + review, console, workers, gateway             | Allow and deny paths end to end through the gateway          |
+| 4    | Approvals end to end, concurrency/security/e2e suites, hardening                 | prd.md §18 acceptance suite green                            |
+| 5    | _(deferred)_ UAT deploy                                                          | Reopens once the VM is sized and costed                      |
+
+Wave 4 is the current finish line. At its gate, report measured container memory and
+CPU for the full local stack: that is the evidence the VM sizing and cost decision
+needs, and it does not exist until the system runs.

@@ -1,0 +1,38 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "apps/control-api"
+    },
+    {
+      "path": "apps/decision-api"
+    },
+    {
+      "path": "apps/worker"
+    },
+    {
+      "path": "integrations/reference-crm"
+    },
+    {
+      "path": "packages/auth"
+    },
+    {
+      "path": "packages/contracts"
+    },
+    {
+      "path": "packages/database"
+    },
+    {
+      "path": "packages/domain"
+    },
+    {
+      "path": "packages/observability"
+    },
+    {
+      "path": "packages/policy-engine"
+    },
+    {
+      "path": "packages/sdk-typescript"
+    }
+  ]
+}

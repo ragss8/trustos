@@ -1,0 +1,66 @@
+# Gate order is fixed by architecture.md §15. Do not reorder to make a build pass:
+# a later stage assumes the earlier ones held.
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '26'
+
+jobs:
+  static:
+    name: format, lint, typecheck, boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format
+      - run: pnpm lint
+      # Boundaries runs AFTER typecheck: workspace imports resolve through dist/,
+      # so the graph is incomplete until the build has produced it.
+      - run: pnpm typecheck
+      - run: pnpm boundaries
+
+  unit:
+    name: unit and property tests
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  # Enabled in Wave 1, when the schema and RLS land. Kept here so the gate order
+  # from architecture.md §15 is visible from the start rather than bolted on.
+  database:
+    name: migrations and tenant isolation
+    runs-on: ubuntu-latest
+    needs: static
+    if: false # Wave 1
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trustos_test
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+        ports: ['5432:5432']
+    steps:
+      - uses: actions/checkout@v5
+      - run: 'echo "placeholder — Wave 1 adds migrations, RLS under a non-owner role, isolation suite"'
