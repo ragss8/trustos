@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+
+# Build output
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Test and coverage
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+.vitest/
+
+# Env and secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+.secrets/
+
+# Prisma generated client
+packages/database/generated/
+**/.prisma/
+
+# Local infrastructure state
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+docker-compose.override.yml
+.volumes/
+pgdata/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+*.swp
+
+# Scratch
+tmp/
+.tmp/
+scratch/
