@@ -44,23 +44,34 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
 
-  # Enabled in Wave 1, when the schema and RLS land. Kept here so the gate order
-  # from architecture.md §15 is visible from the start rather than bolted on.
   database:
     name: migrations and tenant isolation
     runs-on: ubuntu-latest
     needs: static
-    if: false # Wave 1
     services:
       postgres:
         image: postgres:18
         env:
+          POSTGRES_USER: trustos_root
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: trustos_test
         options: >-
-          --health-cmd pg_isready --health-interval 10s
+          --health-cmd "pg_isready -U trustos_root" --health-interval 5s
           --health-timeout 5s --health-retries 5
         ports: ['5432:5432']
     steps:
       - uses: actions/checkout@v5
-      - run: 'echo "placeholder — Wave 1 adds migrations, RLS under a non-owner role, isolation suite"'
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm db:migrate
+        env:
+          DATABASE_ROOT_URL: postgresql://trustos_root:postgres@localhost:5432/trustos_test
+          DATABASE_MIGRATION_URL: postgresql://trustos_migrator:local_dev_only@localhost:5432/trustos_test
+      # Runs as trustos_app: a non-owner role without BYPASSRLS. Running these as the
+      # owner would pass while proving nothing.
+      - run: pnpm --filter @trustos/database test
+        env:
+          DATABASE_URL: postgresql://trustos_app:local_dev_only@localhost:5432/trustos_test

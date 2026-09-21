@@ -1,0 +1,77 @@
+# Local development stack.
+#
+# Ports are offset from the defaults because 5432 and 6379 are already in use by
+# other projects on this machine. Everything reads its port from .env.example.
+name: trustos
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      # Bootstrap superuser. The application NEVER connects as this role: it owns
+      # nothing at runtime and would bypass row-level security. See db/roles.sql.
+      POSTGRES_USER: trustos_root
+      POSTGRES_PASSWORD: local_dev_only
+      POSTGRES_DB: trustos
+      # Deterministic collation so ORDER BY in tests does not drift by host locale.
+      POSTGRES_INITDB_ARGS: '--locale=C --encoding=UTF8'
+    ports: ['${POSTGRES_PORT:-55432}:5432']
+    volumes:
+      # Postgres 18+ expects the mount at /var/lib/postgresql, not /data: the data
+      # lives in a version-named subdirectory so pg_upgrade --link can work across a
+      # single mount boundary. Mounting /data makes the container refuse to start.
+      - postgres-data:/var/lib/postgresql
+    command:
+      - postgres
+      # Surface lock contention and slow statements during development: architecture.md
+      # §13.1 names audit-stream locks and pool pressure as the bottlenecks to measure.
+      - -c
+      - log_lock_waits=on
+      - -c
+      - log_min_duration_statement=250
+      - -c
+      - max_connections=200
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U trustos_root -d trustos']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    ports: ['${REDIS_PORT:-56379}:6379']
+    # No persistence on purpose. Redis is an accelerator (INVARIANT 2); if losing it
+    # breaks correctness, that is a bug we want to fail loudly in development.
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    command: ['start-dev', '--import-realm', '--http-port=8080']
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: local_dev_only
+      KC_HEALTH_ENABLED: 'true'
+    ports: ['${KEYCLOAK_PORT:-58080}:8080']
+    volumes:
+      - ./infra/keycloak/realms:/opt/keycloak/data/import:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  postgres-data:

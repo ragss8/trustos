@@ -16,7 +16,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm boundaries && pnpm test",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "db:migrate": "pnpm --filter @trustos/database db:migrate",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d postgres redis && sleep 6 && pnpm db:migrate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

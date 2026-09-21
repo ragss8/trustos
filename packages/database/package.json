@@ -14,11 +14,17 @@
   },
   "scripts": {
     "typecheck": "tsc --build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "db:reset": "docker compose down -v postgres && docker compose up -d postgres && sleep 6 && pnpm db:migrate"
   },
   "dependencies": {
     "@trustos/contracts": "workspace:*",
     "@trustos/domain": "workspace:*",
-    "@trustos/observability": "workspace:*"
+    "@trustos/observability": "workspace:*",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
   }
 }
