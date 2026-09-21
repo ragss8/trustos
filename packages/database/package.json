@@ -15,7 +15,7 @@
   "scripts": {
     "typecheck": "tsc --build",
     "test": "vitest run",
-    "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "db:migrate": "node --env-file-if-exists=../../.env --experimental-strip-types scripts/migrate.ts",
     "db:reset": "docker compose down -v postgres && docker compose up -d postgres && sleep 6 && pnpm db:migrate"
   },
   "dependencies": {

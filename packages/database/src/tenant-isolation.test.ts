@@ -18,8 +18,7 @@ import {
  */
 
 const APP_URL =
-  process.env['DATABASE_URL'] ??
-  'postgresql://trustos_app:local_dev_only@localhost:55432/trustos?schema=public';
+  process.env['DATABASE_URL'] ?? 'postgresql://trustos_app:local_dev_only@localhost:55432/trustos';
 
 let pool: Pool;
 const acme = randomUUID();
@@ -239,7 +238,9 @@ describe('connection pooling', () => {
   it('does not leak scope to the next borrower of the same connection', async () => {
     // The classic failure: `SET` instead of set_config(..., true). The scope survives
     // the transaction and the next tenant inherits it.
-    const single = createPool(`${APP_URL}&application_name=leak_probe`);
+    const probeUrl = new URL(APP_URL);
+    probeUrl.searchParams.set('application_name', 'leak_probe');
+    const single = createPool(probeUrl.toString());
     try {
       await withTenantTransaction(single, { tenantId: acme }, async (c) => {
         await c.query('SELECT 1');
