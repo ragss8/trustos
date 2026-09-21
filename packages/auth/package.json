@@ -18,6 +18,10 @@
   },
   "dependencies": {
     "@trustos/contracts": "workspace:*",
-    "@trustos/observability": "workspace:*"
+    "@trustos/observability": "workspace:*",
+    "jose": "^6.2.12"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2"
   }
 }

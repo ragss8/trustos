@@ -75,3 +75,28 @@ jobs:
       - run: pnpm --filter @trustos/database test
         env:
           DATABASE_URL: postgresql://trustos_app:local_dev_only@localhost:5432/trustos_test
+
+  auth:
+    name: token validation against a real provider
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      # A stub issuer would not exercise JWKS lookup, kid rotation or the provider's
+      # actual claim shape -- which is exactly where the last bug was.
+      - run: docker compose up -d keycloak
+      - name: wait for keycloak
+        run: |
+          for i in $(seq 1 60); do
+            if [ "$(docker inspect --format '{{.State.Health.Status}}' trustos-keycloak-1)" = "healthy" ]; then
+              echo ready; exit 0
+            fi
+            sleep 3
+          done
+          docker compose logs keycloak; exit 1
+      - run: pnpm --filter @trustos/auth test

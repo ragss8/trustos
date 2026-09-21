@@ -1,0 +1,150 @@
+{
+  "realm": "trustos",
+  "enabled": true,
+  "displayName": "TrustOS (local development)",
+  "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "registrationAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "org_admin",
+        "description": "Full administrative authority"
+      },
+      {
+        "name": "security_admin",
+        "description": "Capabilities and policy publication"
+      },
+      {
+        "name": "developer",
+        "description": "Draft and sandbox access"
+      },
+      {
+        "name": "approver",
+        "description": "Resolve assigned approvals"
+      },
+      {
+        "name": "operator",
+        "description": "Monitor and contain"
+      },
+      {
+        "name": "auditor",
+        "description": "Read-only evidence access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "trustos-console",
+      "name": "TrustOS Console",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "protocolMappers": [
+        {
+          "name": "trustos-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "trustos-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "trustos-gateway",
+      "name": "Reference enforcement gateway",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "local_dev_only_gateway",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "attributes": {
+        "access.token.signed.response.alg": "RS256"
+      },
+      "protocolMappers": [
+        {
+          "name": "trustos-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "trustos-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "trustos-agent-sandbox",
+      "name": "Sandbox agent",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "local_dev_only_agent",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "trustos-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "trustos-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "trustos-api",
+      "name": "TrustOS API (resource server)",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@trustos.local",
+      "email": "admin@trustos.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ada",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local_dev_only",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["org_admin", "security_admin"]
+    },
+    {
+      "username": "approver@trustos.local",
+      "email": "approver@trustos.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Raj",
+      "lastName": "Approver",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local_dev_only",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["approver"]
+    }
+  ]
+}

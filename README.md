@@ -20,14 +20,21 @@ executes using its own destination credentials.
 
 ## Status
 
-Wave 0 of 5. Toolchain, workspace and contracts. No running system yet.
+Wave 1 of 5 complete. Schema, tenant isolation and token validation.
+No HTTP API yet: nothing serves a request until Wave 2.
 
 ## Getting started
 
 ```sh
 pnpm install
-pnpm verify     # format, lint, typecheck, boundaries, test
+pnpm db:up          # postgres + redis on offset ports (5432/6379 are commonly taken)
+pnpm db:migrate     # apply packages/database/db/*.sql
+docker compose up -d keycloak
+pnpm verify         # format, lint, typecheck, boundaries, test
 ```
+
+`pnpm db:reset` rebuilds the database from an empty volume. Migrations are checksummed:
+editing an applied one is refused, because that is how environments silently diverge.
 
 Requires Node 26 and pnpm 11. TypeScript is pinned to the 6.x line: TypeScript 7 is not
 yet supported by typescript-eslint or dependency-cruiser, and losing boundary enforcement
