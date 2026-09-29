@@ -1,3 +1,4 @@
 // @trustos/decision-api
-// authorize, decision read, grant consume, outcome APIs
-export {};
+export * from './server.js';
+export * from './authorize.js';
+export * from './context.js';
