@@ -15,8 +15,23 @@ consumes before it touches the destination system (a CRM, in the first release).
 TrustOS never executes the business action itself. It decides and records authority. The
 gateway executes, using its own destination credentials.
 
-**Current state: design only.** No application code, no infrastructure, no git repo yet.
-Everything below is the plan, not a description of what exists.
+**Current state: Waves 0–3 complete and running locally.** The full path works end to
+end: an agent asks the gateway for a discount, TrustOS decides, a human approves in the
+console when required, the gateway consumes a single-use grant and updates the CRM, and
+the outcome is recorded. 250 automated tests plus a verified manual run.
+
+Start it with `pnpm dev`, or individually:
+
+| Service                     | Port                  | What it is                                     |
+| --------------------------- | --------------------- | ---------------------------------------------- |
+| console                     | 5173                  | React UI (OIDC auth-code + PKCE)               |
+| control-api                 | 53001                 | approvals, registry, audit, overview           |
+| decision-api                | 53002                 | authorize, consume, outcomes                   |
+| fake-crm                    | 53003                 | stand-in destination (ETag + Idempotency-Key)  |
+| gateway                     | 53004                 | customer-domain enforcement point              |
+| postgres / redis / keycloak | 55432 / 56379 / 58080 | offset ports; 5432 and 6379 are commonly taken |
+
+Wave 4 (hardening, e2e suite, the remaining §18 rows) is what remains.
 
 ## Non-negotiable invariants
 
@@ -65,13 +80,32 @@ tests pass. If a task seems to require breaking one, stop and raise it.
 
 ## Stack
 
-TypeScript everywhere. NestJS backends, React + Vite + MUI console, Prisma plus reviewed
-raw SQL over PostgreSQL, Redis for rate limits and immutable caching, BullMQ as a
-dispatch hint over a PostgreSQL outbox. OIDC provider for auth; managed KMS and secret
-store. OpenAPI 3.1 is the contract source and generates SDK types.
+TypeScript everywhere. React + Vite + MUI console, PostgreSQL, Redis, Keycloak.
+Versions are pinned in the lockfile; do not invent them.
 
-Pin versions after a compatibility and security review. The specs deliberately do not
-name versions; do not invent them.
+### Deviations from architecture.md §3, with reasons
+
+| Spec says           | Built with              | Why                                                                                                                                                                                                                                                       |
+| ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NestJS              | **Fastify**             | Nest's DI needs `emitDecoratorMetadata`, which conflicts with this repo's `verbatimModuleSyntax` + `isolatedModules`. Module boundaries are already enforced by dependency-cruiser, so Nest's module system would duplicate that with a weaker mechanism. |
+| Prisma              | **`pg` + reviewed SQL** | The schema leans on composite foreign keys, `FORCE ROW LEVEL SECURITY` and transaction-local `set_config`, none of which Prisma expresses well. SQL is the source of truth; a typed client can be layered later.                                          |
+| TypeScript (latest) | **TypeScript 6.0.3**    | TS 7 is rejected outright by typescript-eslint and dependency-cruiser. Losing boundary enforcement costs more than compiler speed gains.                                                                                                                  |
+
+All three are open for review. Raise them rather than silently "correcting" the code
+back to the spec.
+
+### Two bootstrapping resolvers
+
+`credential_bindings` and `memberships` are tenant-scoped, but resolving the tenant is
+exactly what a login needs to do — and `FORCE RLS` means even the table owner cannot
+read them. `db/006` and `db/007` add `SECURITY DEFINER` functions owned by a NOLOGIN
+`trustos_resolver` role, each requiring an **exact** identifier so nothing is
+enumerable, with a pinned `search_path`. The app can only learn the mapping for a
+credential it already holds, and still reads zero rows from those tables directly.
+
+Do not "simplify" these by granting the app role unscoped SELECT or BYPASSRLS. Both
+were considered and rejected: the first lets the application enumerate every tenant's
+client ids, the second disables isolation everywhere to fix one lookup.
 
 ## Repository layout
 

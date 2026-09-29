@@ -20,20 +20,28 @@ executes using its own destination credentials.
 
 ## Status
 
-Wave 2 of 5 complete. Policy engine, decision core, identity lifecycle and SDK.
+Waves 0–3 complete. The full control path runs locally end to end.
 
-**Nothing serves an HTTP request yet.** Every component below is exercised through
-direct database and library calls; the APIs that wire them together land in Wave 3.
+```
+agent -> gateway -> TrustOS decides -> [human approves] -> single-use grant
+      -> gateway consumes it once -> CRM updated -> outcome recorded
+```
 
-| Component                             | State                                            |
-| ------------------------------------- | ------------------------------------------------ |
-| Tenant isolation, schema, audit chain | Done — 28 tables, proven under a non-owner role  |
-| Token validation                      | Done — against real Keycloak                     |
-| Policy engine                         | Done — deterministic, machine-enforced purity    |
-| Decision core + idempotency           | Done — 16 concurrent requests yield one decision |
-| Agent lifecycle + containment         | Done — epoch-based revocation                    |
-| SDK                                   | Done — retry and idempotency semantics           |
-| HTTP APIs, console, gateway           | Wave 3–4                                         |
+| Component                             | State                                     |
+| ------------------------------------- | ----------------------------------------- |
+| Tenant isolation, schema, audit chain | 28 tables, proven under a non-owner role  |
+| Token validation                      | Against real Keycloak                     |
+| Policy engine                         | Deterministic, machine-enforced purity    |
+| Decision core + idempotency           | 16 concurrent requests yield one decision |
+| Agent lifecycle + containment         | Epoch-based revocation                    |
+| Grants + single-use consumption       | Two racing gateways yield one receipt     |
+| Approvals                             | Separation of duties, server-time expiry  |
+| Decision + control APIs               | Serving HTTP                              |
+| Reference gateway + fake CRM          | Durable operation ledger                  |
+| Console                               | Approvals, registry, audit, overview      |
+| Hardening, full §18 suite             | Wave 4                                    |
+
+250 automated tests.
 
 ## Getting started
 

@@ -12,7 +12,7 @@
     "format:fix": "prettier --write .",
     "lint": "eslint .",
     "boundaries": "depcruise \"apps/*/src\" \"packages/*/src\" \"integrations/*/src\" --config .dependency-cruiser.cjs",
-    "typecheck": "tsc --build --verbose",
+    "typecheck": "tsc --build && pnpm --filter @trustos/console typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm boundaries && pnpm test",
@@ -25,7 +25,8 @@
     "start:decision": "pnpm --filter @trustos/decision-api start",
     "start:control": "pnpm --filter @trustos/control-api start",
     "start:gateway": "pnpm --filter @trustos/reference-crm start",
-    "dev": "docker compose up -d && pnpm db:migrate && pnpm db:seed && pnpm typecheck && (pnpm start:decision & pnpm start:control & pnpm start:gateway & wait)"
+    "dev": "docker compose up -d && pnpm db:migrate && pnpm db:seed && pnpm typecheck && (pnpm start:decision & pnpm start:control & pnpm start:gateway & wait)",
+    "start:console": "pnpm --filter @trustos/console dev"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
