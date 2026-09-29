@@ -20,8 +20,20 @@ executes using its own destination credentials.
 
 ## Status
 
-Wave 1 of 5 complete. Schema, tenant isolation and token validation.
-No HTTP API yet: nothing serves a request until Wave 2.
+Wave 2 of 5 complete. Policy engine, decision core, identity lifecycle and SDK.
+
+**Nothing serves an HTTP request yet.** Every component below is exercised through
+direct database and library calls; the APIs that wire them together land in Wave 3.
+
+| Component                             | State                                            |
+| ------------------------------------- | ------------------------------------------------ |
+| Tenant isolation, schema, audit chain | Done — 28 tables, proven under a non-owner role  |
+| Token validation                      | Done — against real Keycloak                     |
+| Policy engine                         | Done — deterministic, machine-enforced purity    |
+| Decision core + idempotency           | Done — 16 concurrent requests yield one decision |
+| Agent lifecycle + containment         | Done — epoch-based revocation                    |
+| SDK                                   | Done — retry and idempotency semantics           |
+| HTTP APIs, console, gateway           | Wave 3–4                                         |
 
 ## Getting started
 
