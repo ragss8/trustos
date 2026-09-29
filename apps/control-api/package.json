@@ -14,14 +14,21 @@
   },
   "scripts": {
     "typecheck": "tsc --build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node --env-file-if-exists=../../.env dist/main.js"
   },
   "dependencies": {
-    "@trustos/contracts": "workspace:*",
-    "@trustos/domain": "workspace:*",
-    "@trustos/database": "workspace:*",
+    "@fastify/cors": "^11.3.0",
     "@trustos/auth": "workspace:*",
+    "@trustos/contracts": "workspace:*",
+    "@trustos/database": "workspace:*",
+    "@trustos/domain": "workspace:*",
     "@trustos/observability": "workspace:*",
-    "@trustos/policy-engine": "workspace:*"
+    "@trustos/policy-engine": "workspace:*",
+    "fastify": "^5.12.5",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
   }
 }

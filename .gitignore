@@ -66,3 +66,6 @@ Thumbs.db
 tmp/
 .tmp/
 scratch/
+
+# Gateway's own durable ledger (customer trust domain, not ours)
+**/.volumes/

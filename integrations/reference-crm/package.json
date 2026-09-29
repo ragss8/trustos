@@ -14,10 +14,12 @@
   },
   "scripts": {
     "typecheck": "tsc --build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node --env-file-if-exists=../../.env dist/main.js"
   },
   "dependencies": {
     "@trustos/contracts": "workspace:*",
-    "@trustos/sdk-typescript": "workspace:*"
+    "@trustos/sdk-typescript": "workspace:*",
+    "fastify": "^5.12.5"
   }
 }

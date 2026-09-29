@@ -105,9 +105,12 @@ export class TrustOsClient {
   async reportOutcome(
     decisionId: string,
     body: {
+      /** Proves the caller is the gateway that consumed the grant (AUT-04). */
+      receipt_id: string;
       report_id: string;
       state: 'started' | 'succeeded' | 'failed' | 'unknown';
       external_operation_id?: string;
+      is_reconciliation?: boolean;
     },
   ): Promise<void> {
     await this.#send(

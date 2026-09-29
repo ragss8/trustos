@@ -1,3 +1,3 @@
 // @trustos/control-api
-// Org, identity, policy, approval and audit HTTP routes
-export {};
+export * from './server.js';
+export * from './session.js';
