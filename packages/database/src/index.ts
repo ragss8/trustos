@@ -4,3 +4,4 @@ export * from './pool.js';
 export * from './tenant-transaction.js';
 export * from './audit.js';
 export * from './decisions.js';
+export * from './identity.js';
