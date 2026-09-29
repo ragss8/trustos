@@ -6,3 +6,4 @@ export * from './audit.js';
 export * from './decisions.js';
 export * from './identity.js';
 export * from './grants.js';
+export * from './approvals.js';
